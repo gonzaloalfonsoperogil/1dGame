@@ -5,6 +5,20 @@
 #include <conio.h>
 #include <stdio.h>
 #include <windows.h>
+#include <list>
+
+struct Enemy
+{
+	int x = -1;
+	int count = 0;
+	int randomEnemy=0;
+	int sideEnemy;
+};
+
+struct Bullet
+{
+	int x = -1;
+};
 
 
 #define ESC 27
@@ -28,15 +42,23 @@ int			posMushroom		= -1;
 int			countMushroom	= 0;
 int			randomMushroom;
 int			posEnemy		= -1;
-int			countEnemy		= 0;
-int			randomEnemy;
-int			sideEnemy;
 int			score			= 0;
 int			lives			= 3;
-int			EnemiesX[4]		= {};
+std::list<Enemy> enemyList;
+std::list<Bullet> bulletList;
+
+
+void Init() {
+	Enemy e1, e2, e3, e4;
+	enemyList.push_back(e1);
+	enemyList.push_back(e2);
+	enemyList.push_back(e3);
+	enemyList.push_back(e4);
+}
 
 int main()
 {
+	Init();
 	printf("\n\n\n\n\n\n\n\n");
 	while (!end) {
 
@@ -57,12 +79,14 @@ int main()
 
 		Sleep(50);
 	}
-
 	return 0;
 }
 
 void UpdateDraw() {
+	printf("Lives:%i ", lives);
+	
 	for (int i = 0; i <= screenWith; i++) {
+		
 		if (i == posPlayer) {
 			printf("8");
 		}
@@ -72,18 +96,33 @@ void UpdateDraw() {
 		else if (i == posBullet && posPlayer < posBullet) {
 			printf(">");
 		}
-		else if (i == posEnemy) {
-			printf("@");
-		}
 		else if (i == posMushroom) {
 			printf(":");
-		}
-		else {
+		}else {
 			printf("_");
 		}
+		
+		/*else if (i == posEnemy) {
+			printf("@");
+		}*/
+		
+		for (auto it = enemyList.begin(); it != enemyList.end(); ++it) {
+			//printf("%i\n",e.count);
+			if (i == (*it).x) {
+				printf("@");
+			}
+		}
+		/*unsigned int len = sizeof(enemiesX) / sizeof(enemiesX[0]);
+		for(int pos=0; pos<len; pos++){
+			if (i == enemiesX[pos]) {
+				printf("@");
+			}
+		}*/
+
+		
 	}
 
-	printf("\tScore:%i\t Lives:%i", score, lives);
+	printf(" Score:%i", score);
 	printf("\r");
 }
 
@@ -101,39 +140,43 @@ void UpdateBullet() {
 }
 
 void UpdateEnemy() {
-	if (posEnemy<0 || posEnemy>screenWith) {
-		randomEnemy = rand() % 21;
-		countEnemy = 0;
-		sideEnemy = rand() % 2;
-	}
-	if (countEnemy == randomEnemy) {
-		if (sideEnemy == 0) {
-			posEnemy = 0;
+	for (auto it = enemyList.begin(); it != enemyList.end(); ++it) {
+		if (((*it).x<0 || (*it).x>screenWith) || (*it).randomEnemy==0) {
+			(*it).randomEnemy = rand() % 41;
+			if ((*it).x<-1 || (*it).x>screenWith) {
+				(*it).count = 0;
+			}
+			(*it).sideEnemy = rand() % 2;
 		}
-		else {
-			posEnemy = screenWith;
-		}
-	}
-	else if (countEnemy >= randomEnemy) {
-		if (sideEnemy == 0) {
-			posEnemy++;
-		}
-		else {
-			posEnemy--;
-		}
-		if (posEnemy == posBullet) {
-			posEnemy = -1;
-			posBullet = -1;
-		}
-		if (posEnemy == posPlayer) {
-			posPlayer = initPosPlayer;
-			lives--;
-			if (lives < 0) {
-				end = true;
+		if ((*it).count == (*it).randomEnemy) {
+			if ((*it).sideEnemy == 0) {
+				(*it).x = 0;
+			}
+			else {
+				(*it).x = screenWith;
 			}
 		}
+		else if ((*it).count >= (*it).randomEnemy) {
+			if ((*it).sideEnemy == 0) {
+				(*it).x++;
+			}
+			else {
+				(*it).x--;
+			}
+			if ((*it).x == posBullet) {
+				(*it).x = -1;
+				posBullet = -1;
+			}
+			if ((*it).x == posPlayer) {
+				posPlayer = initPosPlayer;
+				lives--;
+				if (lives < 0) {
+					end = true;
+				}
+			}
+		}
+		(*it).count += 1;
 	}
-	countEnemy++;
 }
 
 void UpdateMushroom() {
