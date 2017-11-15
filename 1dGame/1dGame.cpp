@@ -17,7 +17,14 @@ struct Enemy
 
 struct Bullet
 {
-	int x = -1;
+	int x;
+};
+
+struct Mushroom
+{
+	int x;
+	int count = 0;
+	int random = 0;
 };
 
 
@@ -44,12 +51,11 @@ int			randomMushroom;
 int			posEnemy		= -1;
 int			score			= 0;
 int			lives			= 3;
-<<<<<<< HEAD
 int			EnemiesX[4]		= {};
 int			MushroomX[3]	= {};
-=======
 std::list<Enemy> enemyList;
 std::list<Bullet> bulletList;
+std::list<Mushroom> mushroomList;
 
 
 void Init() {
@@ -59,8 +65,6 @@ void Init() {
 	enemyList.push_back(e3);
 	enemyList.push_back(e4);
 }
->>>>>>> 9180e0ed406790c9312e6d92855ce6c1d7caa08f
-
 int main()
 {
 	Init();
@@ -91,39 +95,39 @@ void UpdateDraw() {
 	printf("Lives:%i ", lives);
 	
 	for (int i = 0; i <= screenWith; i++) {
-		
+		bool q = false;
 		if (i == posPlayer) {
 			printf("8");
+			q = true;
 		}
-		else if (i == posBullet && posPlayer > posBullet) {
-			printf("<");
+
+		for (auto it = mushroomList.begin(); it != mushroomList.end(); ++it) {
+			if (i == (*it).x) {
+				printf("$");
+				q = true;
+			}
 		}
-		else if (i == posBullet && posPlayer < posBullet) {
-			printf(">");
+
+		for (auto it = bulletList.begin(); it != bulletList.end(); ++it) {
+			if (i == (*it).x && posPlayer > (*it).x) {
+				printf("<");
+				q = true;
+			}
+			else if (i == (*it).x && posPlayer < (*it).x) {
+				printf(">");
+				q = true;
+			}
 		}
-		else if (i == posMushroom) {
-			printf(":");
-		}else {
-			printf("_");
-		}
-		
-		/*else if (i == posEnemy) {
-			printf("@");
-		}*/
-		
+
 		for (auto it = enemyList.begin(); it != enemyList.end(); ++it) {
-			//printf("%i\n",e.count);
 			if (i == (*it).x) {
 				printf("@");
+				q = true;
 			}
 		}
-		/*unsigned int len = sizeof(enemiesX) / sizeof(enemiesX[0]);
-		for(int pos=0; pos<len; pos++){
-			if (i == enemiesX[pos]) {
-				printf("@");
-			}
-		}*/
-
+		if (!q) {
+			printf("_");
+		}
 		
 	}
 
@@ -132,26 +136,36 @@ void UpdateDraw() {
 }
 
 void UpdateBullet() {
-	if (posBullet < posPlayer || posBullet == posPlayer) {
-		posBullet--;
-	}
-	else if (posBullet > posPlayer) {
-		posBullet++;
-	}
-	if (posEnemy == posBullet) {
-		posEnemy = -1;
-		posBullet = -1;
+	for (auto it = bulletList.begin(); it != bulletList.end();) {
+		if ((*it).x < posPlayer) {
+			(*it).x--;
+		}
+		else if ((*it).x > posPlayer) {
+			(*it).x++;
+		}
+		for (auto itE = enemyList.begin(); itE != enemyList.end(); ++itE) {
+			if ((*itE).x == (*it).x) {
+				(*itE).x = -1;
+			}
+		}
+		if ((*it).x < 0 || (*it).x > screenWith) {
+			it = bulletList.erase(it);
+		}
+		else {
+			it++;
+		}
 	}
 }
 
 void UpdateEnemy() {
 	for (auto it = enemyList.begin(); it != enemyList.end(); ++it) {
-		if (((*it).x<0 || (*it).x>screenWith) || (*it).randomEnemy==0) {
+		if (((*it).x<0 || (*it).x>screenWith)) {
 			(*it).randomEnemy = rand() % 41;
-			if ((*it).x<-1 || (*it).x>screenWith) {
+			if ((*it).count>(*it).randomEnemy) {
 				(*it).count = 0;
 			}
 			(*it).sideEnemy = rand() % 2;
+			
 		}
 		if ((*it).count == (*it).randomEnemy) {
 			if ((*it).sideEnemy == 0) {
@@ -167,6 +181,12 @@ void UpdateEnemy() {
 			}
 			else {
 				(*it).x--;
+			}
+			for (auto itB = bulletList.begin(); itB != bulletList.end(); ++itB) {
+				if ((*itB).x == (*it).x) {
+					(*itB).x = -1;
+					(*it).x = -1;
+				}
 			}
 			if ((*it).x == posBullet) {
 				(*it).x = -1;
@@ -185,25 +205,33 @@ void UpdateEnemy() {
 }
 
 void UpdateMushroom() {
-	if (posMushroom < 0 || posMushroom>screenWith) {
-		randomMushroom = rand() % 21;
-		countMushroom = 0;
+	if ((rand() % 50) == 0) {
+		Mushroom m;
+		m.random=rand() % 21;
+		m.count = 0;
+		mushroomList.push_back(m);
 	}
-	if (countMushroom == randomMushroom) {
-		posMushroom = rand() % screenWith + 1;
-	}
-
-	else if (countMushroom > randomMushroom) {
-		if (countMushroom >= randomMushroom + 80) {
-			posMushroom = -1;
+	for (auto it = mushroomList.begin(); it != mushroomList.end();) {
+		(*it).count++;if ((*it).count == (*it).random) {
+			(*it).x = rand() % screenWith + 1;
+			it++;
 		}
-		else if (posMushroom == posPlayer) {
-			posMushroom = -1;
-			posBullet = -1;
-			score += 10;
+		
+		else if ((*it).count >(*it).random) {
+			if ((*it).count >= (*it).random + 80) {
+				it=mushroomList.erase(it);
+				
+			}
+			else if ((*it).x == posPlayer) {
+				it=mushroomList.erase(it);
+				score += 10;
+			}
+			else {
+				it++;
+			}
 		}
+		
 	}
-	countMushroom++;
 }
 
 void Input() {
@@ -227,15 +255,15 @@ void Input() {
 			break;
 
 		case KEY_K:
-			if (posBullet<0 || posBullet > screenWith) {
-				posBullet = posPlayer - 1;
-			}
+			{Bullet b;
+			b.x = posPlayer - 1;
+			bulletList.push_back(b); }
 			break;
 
 		case KEY_L:
-			if (posBullet<0 || posBullet > screenWith) {
-				posBullet = posPlayer + 1;
-			}
+			{Bullet c;
+			c.x = posPlayer + 1;
+			bulletList.push_back(c); }
 			break;
 		}
 	}
