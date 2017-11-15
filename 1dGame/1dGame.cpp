@@ -34,6 +34,7 @@ int			sideEnemy;
 int			score			= 0;
 int			lives			= 3;
 int			EnemiesX[4]		= {};
+int			MushroomX[3]	= {};
 
 int main()
 {
