@@ -9,9 +9,9 @@
 
 struct Enemy
 {
-	int x = -1;
-	int count = 0;
-	int randomEnemy=0;
+	int x			= -1;
+	int count		= 0;
+	int randomEnemy	= 0;
 	int sideEnemy;
 };
 
@@ -23,8 +23,8 @@ struct Bullet
 struct Mushroom
 {
 	int x;
-	int count = 0;
-	int random = 0;
+	int count	= 0;
+	int random	= 0;
 };
 
 
@@ -44,32 +44,37 @@ bool		end				= false;
 int			screenWith		= 90;
 const int	initPosPlayer	= 20;
 int			posPlayer		= initPosPlayer;
-int			posBullet		= -1;
-int			posMushroom		= -1;
-int			countMushroom	= 0;
-int			randomMushroom;
-int			posEnemy		= -1;
 int			score			= 0;
 int			lives			= 3;
-int			EnemiesX[4]		= {};
-int			MushroomX[3]	= {};
-std::list<Enemy> enemyList;
-std::list<Bullet> bulletList;
-std::list<Mushroom> mushroomList;
 
+std::list<Enemy>		enemyList;
+std::list<Bullet>		bulletList;
+std::list<Mushroom>		mushroomList;
 
 void Init() {
 	Enemy e1, e2, e3, e4;
+
 	enemyList.push_back(e1);
 	enemyList.push_back(e2);
 	enemyList.push_back(e3);
 	enemyList.push_back(e4);
 }
+
 int main()
 {
 	Init();
-	printf("\n\n\n\n\n\n\n\n");
+	
 	while (!end) {
+		/*printf("%s", "'");
+		printf("\r");
+		Sleep(50);
+		printf("%s", ":");
+		printf("\r");
+		Sleep(50);
+		printf("%s", ".");
+		printf("\r");
+		Sleep(50);*/
+		printf("\n\n\n\n\n\n\n\n");
 
 		// Draw loop
 		UpdateDraw();
@@ -87,6 +92,7 @@ int main()
 		Input();
 
 		Sleep(50);
+		system("cls");
 	}
 	return 0;
 }
@@ -94,7 +100,7 @@ int main()
 void UpdateDraw() {
 	printf("Lives:%i ", lives);
 	
-	for (int i = 0; i <= screenWith; i++) {
+	for (int i = 0; i < screenWith; i++) {
 		bool q = false;
 		if (i == posPlayer) {
 			printf("8");
@@ -132,7 +138,6 @@ void UpdateDraw() {
 	}
 
 	printf(" Score:%i", score);
-	printf("\r");
 }
 
 void UpdateBullet() {
@@ -143,11 +148,14 @@ void UpdateBullet() {
 		else if ((*it).x > posPlayer) {
 			(*it).x++;
 		}
+
 		for (auto itE = enemyList.begin(); itE != enemyList.end(); ++itE) {
 			if ((*itE).x == (*it).x) {
 				(*itE).x = -1;
+				(*it).x = -1;
 			}
 		}
+
 		if ((*it).x < 0 || (*it).x > screenWith) {
 			it = bulletList.erase(it);
 		}
@@ -182,16 +190,14 @@ void UpdateEnemy() {
 			else {
 				(*it).x--;
 			}
+
 			for (auto itB = bulletList.begin(); itB != bulletList.end(); ++itB) {
 				if ((*itB).x == (*it).x) {
 					(*itB).x = -1;
 					(*it).x = -1;
 				}
 			}
-			if ((*it).x == posBullet) {
-				(*it).x = -1;
-				posBullet = -1;
-			}
+
 			if ((*it).x == posPlayer) {
 				posPlayer = initPosPlayer;
 				lives--;
@@ -211,6 +217,7 @@ void UpdateMushroom() {
 		m.count = 0;
 		mushroomList.push_back(m);
 	}
+
 	for (auto it = mushroomList.begin(); it != mushroomList.end();) {
 		(*it).count++;if ((*it).count == (*it).random) {
 			(*it).x = rand() % screenWith + 1;
@@ -238,33 +245,17 @@ void Input() {
 	if (_kbhit()) {
 		int key = _getch();
 		switch (key) {
-		case ESC:
-			end = true;
-			break;
-
-		case KEY_A:
-			if (posPlayer > 0) {
-				posPlayer--;
-			}
-			break;
-
-		case KEY_D:
-			if (posPlayer < screenWith) {
-				posPlayer++;
-			}
-			break;
-
+		case ESC:									end = true;					break;
+		case KEY_A: if (posPlayer > 0)				posPlayer--;				break;
+		case KEY_D: if (posPlayer < screenWith)		posPlayer++;				break;
 		case KEY_K:
-			{Bullet b;
-			b.x = posPlayer - 1;
-			bulletList.push_back(b); }
-			break;
-
+													{Bullet b;
+													b.x = posPlayer - 1;
+													bulletList.push_back(b);}	break;
 		case KEY_L:
-			{Bullet c;
-			c.x = posPlayer + 1;
-			bulletList.push_back(c); }
-			break;
+													{Bullet c;
+													c.x = posPlayer + 1;
+													bulletList.push_back(c); }	break;
 		}
 	}
 }
