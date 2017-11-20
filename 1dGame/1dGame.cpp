@@ -29,10 +29,10 @@ struct Mushroom
 
 
 #define ESC 27
-#define KEY_A 97
-#define KEY_D 100
-#define KEY_L 108
-#define KEY_K 107
+#define KEY_LEFT 97
+#define KEY_RIGHT 100
+#define KEY_R_SHOOT 108
+#define KEY_L_SHOOT 107
 
 void UpdateDraw();
 void UpdateBullet();
@@ -246,13 +246,13 @@ void Input() {
 		int key = _getch();
 		switch (key) {
 		case ESC:									end = true;					break;
-		case KEY_A: if (posPlayer > 0)				posPlayer--;				break;
-		case KEY_D: if (posPlayer < screenWith)		posPlayer++;				break;
-		case KEY_K:
+		case KEY_LEFT: if (posPlayer > 0)				posPlayer--;				break;
+		case KEY_RIGHT: if (posPlayer < screenWith)		posPlayer++;				break;
+		case KEY_L_SHOOT:
 													{Bullet b;
 													b.x = posPlayer - 1;
 													bulletList.push_back(b);}	break;
-		case KEY_L:
+		case KEY_R_SHOOT:
 													{Bullet c;
 													c.x = posPlayer + 1;
 													bulletList.push_back(c); }	break;
